@@ -117,5 +117,5 @@ if __name__ == '__main__':
  https://kfire.net/ 多线程版本
 '''
     print(logo)
-    print('  Command:\n  <extract>  - 提取http代理（来源：西刺代理）\n  <validate> - 验证http代理（D:/httpproxies.dic）\n  <exit>     - 退出\n ----------------------------------------------\n')
+    print('  Command:\n  <extract>  - 提取http代理（来源：西刺代理）\n  <validate> - 验证http代理（D:/proxies.dic）\n  <exit>     - 退出\n ----------------------------------------------\n')
     main()
