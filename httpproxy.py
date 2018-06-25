@@ -35,7 +35,6 @@ class startvalidate(threading.Thread):
     def run(self):
         global num,z
         truelist = []
-        truelist = []
         for i in proxylist[self.s:self.f]:
             proxies = { "http": "http://"+i, "https": "http://" + i, }
             print('正在验证:%s                       '%i,end='\r')
