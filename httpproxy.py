@@ -21,43 +21,52 @@ class startextract(threading.Thread):
             data = "\n".join(list(proxylist))
             savefile=open('D:/poxies.dic','wb+')
             savefile.write(data.encode('gbk','ignore'))
-            print('*爬取完成，文件位于D:/poxies.dic\n*含有%s个HTTP代理'%m)
+            print('[*]提取完成，文件位于 D:/poxies.dic\n[*]含有%s个HTTP代理（默认4页）'%m)
             savefile.close()
             num=0
             proxylist.clear()
 
 class startvalidate(threading.Thread):
-    def __init__(self,proxylist,s,f):
+    def __init__(self,proxylist,s,f,truelist):
         super(startvalidate,self).__init__()
         self.proxylist = proxylist
         self.s = s
         self.f = f
+        self.truelist = truelist
     def run(self):
         global num,z
-        truelist = []
         for i in proxylist[self.s:self.f]:
             proxies = { "http": "http://"+i, "https": "http://" + i, }
-            print('正在验证:%s                       '%i,end='\r')
+            print('[+]正在验证:%s                       '%i,end='\r')
             try:
-                res = requests.get(url='http://ip.chinaz.com/getip.aspx',proxies=proxies,timeout=10)
+                requests.packages.urllib3.disable_warnings()
+                res = requests.get(url='https://ip.cn/',headers=headers,proxies=proxies,verify=False,timeout=10)
+                if res.status_code == 200:
+                    self.truelist.append(i)
+                else:
+                    continue
             except:
                 continue
-            else:
-                truelist.append(i)
+
+
         num=num+1
-        if num >=z//20:   #   20个为一个线程
-            p= len(truelist)
-            print('*验证结束,成功%s个HTTP代理.'%p)
+        if num >=z//5:   #   10个为一个线程
+            p= len(self.truelist)
+            print('[*]验证结束,成功%s个HTTP代理.      '%p)
             num=0
             proxylist.clear()
-            for i in truelist:
-                print(i)
+            for i in self.truelist:
+                data = "\n".join(self.truelist)
+            savefile=open('D:/Success.dic','wb+')
+            savefile.write(data.encode('gbk','ignore'))
+            print('[*]IP已导出，文件位于 D:/Success.dic')
+            savefile.close()
 
 
 def extract():
     global z
     threadss=[]
-    z = 2        # 爬取的页数
+    z = 4        # 爬取的页数
     for i in range(1,z+1):
             thread = startextract(i)
             threadss.append(thread)
@@ -73,14 +82,15 @@ def validate():
         proxylist.append(dic)
     global z
     z =len(proxylist)
-    print('*含有%s个HTTP代理\n*开始验证有效性.'%z)
+    print('[*]含有%s个HTTP代理\n[*]开始验证有效性.'%z)
     threads=[]
-    for i in range(0,z,20):
-        if i < z-20:
-            thread = startvalidate(proxylist,i,i+20)
+    truelist = []
+    for i in range(0,z,5):
+        if i < z-5:
+            thread = startvalidate(proxylist,i,i+5,truelist)
             threads.append(thread)
         else:
-            thread = startvalidate(proxylist,i,z)
+            thread = startvalidate(proxylist,i,z,truelist)
             threads.append(thread)
     for t in threads:
         t.start()
@@ -90,7 +100,7 @@ def validate():
 
 
 def main():
-    command= input('#root:> ')
+    command= input('[$]root:> ')
     if command =='extract':
         extract()
     elif command =='validate':
